@@ -2,20 +2,31 @@ services:
   trino:
     image: trinodb/trino:440
     container_name: trino
+    restart: unless-stopped
     ports:
       - "8080:8080"
     volumes:
       - ./trino/catalog:/etc/trino/catalog
     depends_on:
-      - iceberg-rest
-      - minio
+      iceberg-rest:
+        condition: service_started
+      minio:
+        condition: service_started
+      postgres:
+        condition: service_healthy
       
   iceberg-rest:
     image: tabulario/iceberg-rest:latest
     container_name: iceberg-rest
+    restart: unless-stopped
     ports:
       - "8181:8181"
     environment:
+      CATALOG_CATALOG__IMPL: org.apache.iceberg.jdbc.JdbcCatalog
+      CATALOG_URI: jdbc:postgresql://postgres:5432/iceberg_db
+      CATALOG_JDBC_USER: iceberg_user
+      CATALOG_JDBC_PASSWORD: iceberg_password
+      CATALOG_JDBC_INITIALIZE: "true"
       CATALOG_WAREHOUSE: s3://warehouse/
       CATALOG_IO__IMPL: org.apache.iceberg.aws.s3.S3FileIO
       CATALOG_S3_ENDPOINT: http://minio:9000
@@ -23,14 +34,34 @@ services:
       CATALOG_S3_ACCESS__KEY__ID: admin
       CATALOG_S3_SECRET__ACCESS__KEY: admin123
       AWS_REGION: us-east-1
-    volumes:
-      - iceberg-catalog-data:/var/lib/iceberg/data
     depends_on:
-      - minio
+      minio:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:14
+    container_name: postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: iceberg_user
+      POSTGRES_PASSWORD: iceberg_password
+      POSTGRES_DB: iceberg_db
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U iceberg_user -d iceberg_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
       
   minio:
     image: minio/minio
     container_name: minio-trino-iceberg
+    restart: unless-stopped
     command: server /data --console-address ":9001"
     ports:
       - "9000:9000"
@@ -43,4 +74,4 @@ services:
       
 volumes:
   minio-data:
-  iceberg-catalog-data: {}
+  postgres-data: {}
