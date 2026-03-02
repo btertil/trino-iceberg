@@ -75,3 +75,29 @@ select * from sales_rep;
 
 show columns from sales_rep_ranked;
 
+-- AVRO
+CREATE TABLE iceberg.sales.sales_rep_avro (
+  sales_id BIGINT,
+  sales_person_name VARCHAR
+)
+WITH (format = 'AVRO');
+
+INSERT INTO iceberg.sales.sales_rep_avro VALUES
+(3, 'X'),
+(4, 'Y'),
+(25, 'X'),
+(4, 'Y'),
+(21, 'X'),
+(23, 'X');
+
+analyze iceberg.sales.sales_rep_avro;
+
+SELECT * FROM iceberg.sales.sales_rep_avro;
+
+SELECT
+    sales_person_name,
+    count(*) ile,
+    avg(sales_id) avg_score,
+    sum(sales_id) total_score,
+    rank() OVER (ORDER BY sum(sales_id) DESC) rank
+FROM iceberg.sales.sales_rep_avro GROUP BY sales_person_name;
