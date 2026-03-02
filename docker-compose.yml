@@ -23,6 +23,8 @@ services:
       CATALOG_S3_ACCESS__KEY__ID: admin
       CATALOG_S3_SECRET__ACCESS__KEY: admin123
       AWS_REGION: us-east-1
+    volumes:
+      - iceberg-catalog-data:/var/lib/iceberg/data
     depends_on:
       - minio
       
@@ -41,3 +43,4 @@ services:
       
 volumes:
   minio-data:
+  iceberg-catalog-data: {}
