@@ -38,7 +38,7 @@ FROM iceberg.sales.sales_rep GROUP BY sales_person_name;
 
 -- new table
 
-create table iceberg.sales.sales_rep_ranked as
+create table if not exists iceberg.sales.sales_rep_ranked as
     SELECT
         sales_person_name,
         count(*) ile,
@@ -73,5 +73,5 @@ select 'Today is ' || cast(current_date as varchar);
 use iceberg.sales;
 select * from sales_rep;
 
-how columns from sales_rep_ranked;
+show columns from sales_rep_ranked;
 
