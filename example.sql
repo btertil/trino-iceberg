@@ -36,15 +36,3 @@ SELECT
     rank() OVER (ORDER BY sum(sales_id) DESC) rank
 FROM iceberg.sales.sales_rep GROUP BY sales_person_name;
 
--- views are not supported in iceberg, but we can create a view in trino and query it
-
--- create view iceberg.sales.v_sales_rep_scores_rank as
---     SELECT
---         sales_person_name,
---         count(*) ile,
---         avg(sales_id) avg_score,
---         sum(sales_id) total_score,
---         rank() OVER (ORDER BY sum(sales_id) DESC) rank
---     FROM iceberg.sales.sales_rep GROUP BY sales_person_name;
-
--- select * from iceberg.sales.v_sales_rep_scores_rank;
