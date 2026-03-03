@@ -71,6 +71,7 @@ show current roles;
 select 'Today is ' || cast(current_date as varchar);
 
 use iceberg.sales;
+
 select * from sales_rep;
 
 show columns from sales_rep_ranked;
@@ -83,8 +84,6 @@ CREATE TABLE iceberg.sales.sales_rep_avro (
 WITH (format = 'AVRO');
 
 INSERT INTO iceberg.sales.sales_rep_avro VALUES
-(3, 'X'),
-(4, 'Y'),
 (25, 'X'),
 (4, 'Y'),
 (21, 'X'),
@@ -101,3 +100,7 @@ SELECT
     sum(sales_id) total_score,
     rank() OVER (ORDER BY sum(sales_id) DESC) rank
 FROM iceberg.sales.sales_rep_avro GROUP BY sales_person_name;
+
+
+desc iceberg.sales.sales_rep_avro;
+
